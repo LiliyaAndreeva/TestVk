@@ -34,14 +34,6 @@ private extension ReviewsView {
 		tableView.separatorStyle = .none
 		tableView.allowsSelection = false
 		tableView.register(ReviewCell.self, forCellReuseIdentifier: ReviewCellConfig.reuseId)
-		
-//		tableView.translatesAutoresizingMaskIntoConstraints = false
-//		NSLayoutConstraint.activate([
-//			tableView.topAnchor.constraint(equalTo: topAnchor),
-//			tableView.leadingAnchor.constraint(equalTo: leadingAnchor),
-//			tableView.trailingAnchor.constraint(equalTo: trailingAnchor),
-//			tableView.bottomAnchor.constraint(equalTo: bottomAnchor)
-//		])
 	}
 
 }

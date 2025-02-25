@@ -29,7 +29,6 @@ private extension RootView {
     func setupReviewsButton() {
         reviewsButton.setTitle("Отзывы", for: .normal)
         reviewsButton.setImage(UIImage(systemName: "chevron.left"), for: .normal)
-       // reviewsButton.addAction(UIAction { [weak self] _ in onTapReviews() }, for: .touchUpInside)
 		reviewsButton.addAction(UIAction { [weak self] _ in
 			self?.onTapReviews()
 		}, for: .touchUpInside)

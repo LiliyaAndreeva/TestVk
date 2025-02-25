@@ -35,7 +35,6 @@ extension ReviewsViewModel {
 	func getReviews() {
 		guard state.shouldLoad else { return }
 		state.shouldLoad = false
-		//reviewsProvider.getReviews(offset: state.offset, completion: gotReviews)
 		DispatchQueue.global().async { [weak self] in
 			guard let self = self else { return }
 			self.reviewsProvider.getReviews(offset: self.state.offset) { result in
@@ -86,16 +85,12 @@ private extension ReviewsViewModel {
 
     typealias ReviewItem = ReviewCellConfig
 
-    func makeReviewItem(_ review: Review) -> ReviewItem {
-        let reviewText = review.text.attributed(font: .text)
-        let created = review.created.attributed(font: .created, color: .created)
-        let item = ReviewItem(
-            reviewText: reviewText,
-            created: created,
-            onTapShowMore: showMoreReview
-        )
-        return item
-    }
+	func makeReviewItem(_ review: Review) -> ReviewItem {
+		return ReviewCellConfig(
+			review: review,
+			onTapShowMore: showMoreReview
+		)
+	}
 
 }
 

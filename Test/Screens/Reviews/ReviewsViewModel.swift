@@ -32,11 +32,19 @@ extension ReviewsViewModel {
     typealias State = ReviewsViewModelState
 
     /// Метод получения отзывов.
-    func getReviews() {
-        guard state.shouldLoad else { return }
-        state.shouldLoad = false
-        reviewsProvider.getReviews(offset: state.offset, completion: gotReviews)
-    }
+	func getReviews() {
+		guard state.shouldLoad else { return }
+		state.shouldLoad = false
+		//reviewsProvider.getReviews(offset: state.offset, completion: gotReviews)
+		DispatchQueue.global().async { [weak self] in
+			guard let self = self else { return }
+			self.reviewsProvider.getReviews(offset: self.state.offset) { result in
+				DispatchQueue.main.async {
+					self.gotReviews(result)
+				}
+			}
+		}
+	}
 
 }
 

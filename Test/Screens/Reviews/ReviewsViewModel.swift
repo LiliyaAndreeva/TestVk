@@ -56,9 +56,13 @@ private extension ReviewsViewModel {
         do {
             let data = try result.get()
             let reviews = try decoder.decode(Reviews.self, from: data)
+			state.items.removeAll { $0 is ReviewCountCellConfig }
             state.items += reviews.items.map(makeReviewItem)
             state.offset += state.limit
             state.shouldLoad = state.offset < reviews.count
+			
+			let countConfig = ReviewCountCellConfig(reviewCount: state.items.compactMap { $0 as? ReviewCellConfig }.count)
+			state.items.append(countConfig)
         } catch {
             state.shouldLoad = true
         }
@@ -76,7 +80,6 @@ private extension ReviewsViewModel {
         state.items[index] = item
         onStateChange?(state)
     }
-
 }
 
 // MARK: - Items

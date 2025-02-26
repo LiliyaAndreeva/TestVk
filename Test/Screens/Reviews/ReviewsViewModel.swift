@@ -122,13 +122,14 @@ private extension ReviewsViewModel {
 		
 		if let avatarURL = avatarURL {
 			group.enter()
-			networkManager.fetchImage(from: avatarURL) { image in
-				avatarImage = image ?? placeholderAvatar
-				if let image = image {
+			networkManager.fetchImage(from: avatarURL) { result in
+				switch result {
+				case .success(let image):
 					avatarImage = image
 					print("Загружен аватар: \(avatarURL)")
-				} else {
-					print("Ошибка загрузки аватара: \(avatarURL)")
+				case .failure(let error):
+					avatarImage = placeholderAvatar
+					print("Ошибка загрузки аватара: \(avatarURL), ошибка: \(error)")
 				}
 				group.leave()
 			}
@@ -137,12 +138,13 @@ private extension ReviewsViewModel {
 		if let photoURLs = photoURLs, !photoURLs.isEmpty {
 			for url in photoURLs {
 				group.enter()
-				networkManager.fetchImage(from: url) { image in
-					if let image = image {
+				networkManager.fetchImage(from: url) { result in
+					switch result {
+					case .success(let image):
 						loadedPhotos.append(image)
-						print("Загружено фото: \(url )")
-					} else {
-						print("Ошибка загрузки фото: \(url)")
+						print("Загружено фото: \(url)")
+					case .failure(let error):
+						print("Ошибка загрузки фото: \(url), ошибка: \(error)")
 					}
 					group.leave()
 				}

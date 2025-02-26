@@ -32,11 +32,18 @@ extension ReviewsViewModel {
     typealias State = ReviewsViewModelState
 
     /// Метод получения отзывов.
-    func getReviews() {
-        guard state.shouldLoad else { return }
-        state.shouldLoad = false
-        reviewsProvider.getReviews(offset: state.offset, completion: gotReviews)
-    }
+	func getReviews() {
+		guard state.shouldLoad else { return }
+		state.shouldLoad = false
+		DispatchQueue.global().async { [weak self] in
+			guard let self = self else { return }
+			self.reviewsProvider.getReviews(offset: self.state.offset) { result in
+				DispatchQueue.main.async {
+					self.gotReviews(result)
+				}
+			}
+		}
+	}
 
 }
 
@@ -49,9 +56,13 @@ private extension ReviewsViewModel {
         do {
             let data = try result.get()
             let reviews = try decoder.decode(Reviews.self, from: data)
+			state.items.removeAll { $0 is ReviewCountCellConfig }
             state.items += reviews.items.map(makeReviewItem)
             state.offset += state.limit
             state.shouldLoad = state.offset < reviews.count
+			
+			let countConfig = ReviewCountCellConfig(reviewCount: state.items.compactMap { $0 as? ReviewCellConfig }.count)
+			state.items.append(countConfig)
         } catch {
             state.shouldLoad = true
         }
@@ -69,7 +80,6 @@ private extension ReviewsViewModel {
         state.items[index] = item
         onStateChange?(state)
     }
-
 }
 
 // MARK: - Items
@@ -78,16 +88,12 @@ private extension ReviewsViewModel {
 
     typealias ReviewItem = ReviewCellConfig
 
-    func makeReviewItem(_ review: Review) -> ReviewItem {
-        let reviewText = review.text.attributed(font: .text)
-        let created = review.created.attributed(font: .created, color: .created)
-        let item = ReviewItem(
-            reviewText: reviewText,
-            created: created,
-            onTapShowMore: showMoreReview
-        )
-        return item
-    }
+	func makeReviewItem(_ review: Review) -> ReviewItem {
+		return ReviewCellConfig(
+			review: review,
+			onTapShowMore: showMoreReview
+		)
+	}
 
 }
 

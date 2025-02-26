@@ -29,11 +29,12 @@ private extension ReviewsView {
         setupTableView()
     }
 
-    func setupTableView() {
-        addSubview(tableView)
-        tableView.separatorStyle = .none
-        tableView.allowsSelection = false
-        tableView.register(ReviewCell.self, forCellReuseIdentifier: ReviewCellConfig.reuseId)
-    }
+	func setupTableView() {
+		addSubview(tableView)
+		tableView.separatorStyle = .none
+		tableView.allowsSelection = false
+		tableView.register(ReviewCell.self, forCellReuseIdentifier: ReviewCellConfig.reuseId)
+		tableView.register(ReviewCountCell.self, forCellReuseIdentifier: ReviewCountCellConfig.reuseId)
+	}
 
 }

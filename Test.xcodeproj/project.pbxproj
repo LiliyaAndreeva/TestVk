@@ -28,6 +28,7 @@
 		21ED1F622D69CBCD0012D6F6 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21ED1F612D69CBCD0012D6F6 /* RootView.swift */; };
 		21ED1F652D69D0340012D6F6 /* ReviewsScreenFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21ED1F642D69D0340012D6F6 /* ReviewsScreenFactory.swift */; };
 		7212EB0D2D6E24400064A31D /* ReviewCountCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7212EB0C2D6E24400064A31D /* ReviewCountCell.swift */; };
+		72A7F52F2D6F1098009AC4FC /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72A7F52E2D6F1098009AC4FC /* NetworkManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -53,6 +54,7 @@
 		21ED1F612D69CBCD0012D6F6 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		21ED1F642D69D0340012D6F6 /* ReviewsScreenFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewsScreenFactory.swift; sourceTree = "<group>"; };
 		7212EB0C2D6E24400064A31D /* ReviewCountCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewCountCell.swift; sourceTree = "<group>"; };
+		72A7F52E2D6F1098009AC4FC /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,6 +140,7 @@
 		21B82E2C2D47B0640085DAA2 /* Test */ = {
 			isa = PBXGroup;
 			children = (
+				72A7F52D2D6F1089009AC4FC /* Supported */,
 				21B82E2B2D47B0640085DAA2 /* AppDelegate.swift */,
 				21B82E2A2D47B0640085DAA2 /* Screens */,
 				2166686D2D48DEBF009AAA76 /* Protocols */,
@@ -188,6 +191,14 @@
 				21ED1F612D69CBCD0012D6F6 /* RootView.swift */,
 			);
 			path = Root;
+			sourceTree = "<group>";
+		};
+		72A7F52D2D6F1089009AC4FC /* Supported */ = {
+			isa = PBXGroup;
+			children = (
+				72A7F52E2D6F1098009AC4FC /* NetworkManager.swift */,
+			);
+			path = Supported;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -275,6 +286,7 @@
 				21B8416B2D47BFA10085DAA2 /* Reviews.swift in Sources */,
 				21B82E302D47B0640085DAA2 /* ReviewsViewController.swift in Sources */,
 				2166A0F42D4A5B25009AAA76 /* ReviewsView.swift in Sources */,
+				72A7F52F2D6F1098009AC4FC /* NetworkManager.swift in Sources */,
 				216668732D48E89A009AAA76 /* Colors.swift in Sources */,
 				21B841712D47C5F00085DAA2 /* TableCellConfig.swift in Sources */,
 				21ED1F652D69D0340012D6F6 /* ReviewsScreenFactory.swift in Sources */,

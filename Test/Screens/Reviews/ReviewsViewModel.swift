@@ -6,7 +6,7 @@ final class ReviewsViewModel: NSObject {
 	/// Замыкание, вызываемое при изменении `state`.
 	var onStateChange: ((State) -> Void)?
 
-	/*private */var state: State
+	private var state: State
 	private let reviewsProvider: ReviewsProvider
 	private let ratingRenderer: RatingRenderer
 	private let decoder: JSONDecoder
@@ -40,7 +40,7 @@ extension ReviewsViewModel {
 		state.shouldLoad = false
 		state.isLoading = true
 		onStateChange?(state)
-		
+	
 		DispatchQueue.global().async { [weak self] in
 			guard let self = self else { return }
 			self.reviewsProvider.getReviews(offset: self.state.offset) { result in
@@ -65,6 +65,7 @@ private extension ReviewsViewModel {
 			print("Декодировано \(reviews.items.count) отзывов, общее количество: \(reviews.count)")
 			
 			state.items.removeAll { $0 is ReviewCountCellConfig }
+
 			
 			let group = DispatchGroup()
 			var reviewItems: [ReviewItem] = []
@@ -83,6 +84,7 @@ private extension ReviewsViewModel {
 				self.state.offset += self.state.limit
 				self.state.shouldLoad = self.state.offset < reviews.count
 				self.state.isLoading = false
+				self.state.areImagesLoaded = true
 				if self.state.isInitialLoad {
 					self.state.isInitialLoad = false
 				}
@@ -96,9 +98,8 @@ private extension ReviewsViewModel {
 			state.isLoading = false
 			onStateChange?(state)
 		}
-		
 	}
-	
+
 	/// Метод, вызываемый при нажатии на кнопку "Показать полностью...".
 	/// Снимает ограничение на количество строк текста отзыва (раскрывает текст).
 	func showMoreReview(with id: UUID) {
@@ -123,20 +124,24 @@ private extension ReviewsViewModel {
 			group.enter()
 			networkManager.fetchImage(from: avatarURL) { image in
 				avatarImage = image ?? placeholderAvatar
-				print("Загружен аватар: \(avatarURL), успех: \(image != nil)")
+				if let image = image {
+					avatarImage = image
+					print("Загружен аватар: \(avatarURL)")
+				} else {
+					print("Ошибка загрузки аватара: \(avatarURL)")
+				}
 				group.leave()
 			}
 		}
 		
-		if let photoURLs = photoURLs {
+		if let photoURLs = photoURLs, !photoURLs.isEmpty {
 			for url in photoURLs {
 				group.enter()
 				networkManager.fetchImage(from: url) { image in
 					if let image = image {
 						loadedPhotos.append(image)
-						print("Загружено фото: \(url)")
+						print("Загружено фото: \(url )")
 					} else {
-						
 						print("Ошибка загрузки фото: \(url)")
 					}
 					group.leave()
@@ -145,10 +150,12 @@ private extension ReviewsViewModel {
 		}
 		
 		group.notify(queue: .main) {
-			print("loadImages завершён, photos: \(loadedPhotos.count)")
+			print("Все изображения загружены, photos: \(loadedPhotos.count)")
+			self.onStateChange?(self.state)
 			completion(avatarImage, loadedPhotos.isEmpty ? nil : loadedPhotos)
 		}
 	}
+
 }
 
 // MARK: - Items
@@ -156,30 +163,20 @@ private extension ReviewsViewModel {
 private extension ReviewsViewModel {
 
 	typealias ReviewItem = ReviewCellConfig
+	
 
 	func makeReviewItem(_ review: Review, completion: @escaping (ReviewItem) -> Void) {
-		loadImages(avatarURL: review.avatarURL, photoURLs: review.photoURLs) { avatarImage, photos in
-			let config = ReviewCellConfig(
+		loadImages(avatarURL: review.avatarURL, photoURLs: review.photoURLs) { avatarImage, loadedPhotos in
+			
+			let reviewItem = ReviewItem(
 				review: review,
 				onTapShowMore: self.showMoreReview,
 				avatarImage: avatarImage,
-				photos: photos
+				photos: loadedPhotos
 			)
-			completion(config)
+			completion(reviewItem)
 		}
 	}
-//	func makeReviewItem(_ review: Review, completion: @escaping (ReviewItem) -> Void) {
-//		let placeholderAvatar = UIImage(named: "l5w5aIHioYc") ?? UIImage()
-//		let assetsPhoto = UIImage(named: "IMG_0001") ?? UIImage()
-//		let testPhotos = [assetsPhoto, assetsPhoto] // Тестовый массив из двух фото
-//		let config = ReviewCellConfig(
-//			review: review,
-//			onTapShowMore: self.showMoreReview,
-//			avatarImage: placeholderAvatar,
-//			photos: testPhotos
-//		)
-//		completion(config)
-//	}
 }
 
 // MARK: - UITableViewDataSource

@@ -22,8 +22,8 @@ final class ReviewsViewController: UIViewController {
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		setupViewModel()
 		viewModel.getReviews()
+		setupViewModel()
 	}
 
 }
@@ -40,6 +40,7 @@ private extension ReviewsViewController {
 	}
 
 	func setupViewModel() {
+
 		viewModel.onStateChange = { [weak self] state in
 			DispatchQueue.main.async {
 				guard let self = self else { return }

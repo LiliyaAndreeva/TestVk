@@ -7,4 +7,5 @@ struct ReviewsViewModelState {
 	var shouldLoad = true
 	var isLoading = false
 	var isInitialLoad = true
+	var areImagesLoaded = false
 }

@@ -2,10 +2,10 @@ import UIKit
 
 /// Конфигурация ячейки. Содержит данные для отображения в ячейке.
 struct ReviewCellConfig {
-	
+
 	/// Идентификатор для переиспользования ячейки.
 	static let reuseId = String(describing: ReviewCellConfig.self)
-	
+
 	/// Идентификатор конфигурации. Можно использовать для поиска конфигурации в массиве.
 	let id = UUID()
 	/// Текст отзыва.
@@ -24,10 +24,10 @@ struct ReviewCellConfig {
 	let rating: Int
 	/// Массив фотографий (опционально).
 	let photos: [UIImage]?
-	
+
 	/// Объект, хранящий посчитанные фреймы для ячейки отзыва.
 	fileprivate let layout = ReviewCellLayout()
-	
+
 	init(
 		review: Review,
 		onTapShowMore: @escaping (UUID) -> Void,
@@ -47,37 +47,36 @@ struct ReviewCellConfig {
 // MARK: - TableCellConfig
 
 extension ReviewCellConfig: TableCellConfig {
-	
+
 	/// Метод обновления ячейки.
 	/// Вызывается из `cellForRowAt:` у `dataSource` таблицы.
 	func update(cell: UITableViewCell) {
 		guard let cell = cell as? ReviewCell else { return }
 		cell.configure(with: self)
 	}
-	
+
 	/// Метод, возвращаюший высоту ячейки с данным ограничением по размеру.
 	/// Вызывается из `heightForRowAt:` делегата таблицы.
 	func height(with size: CGSize) -> CGFloat {
 		layout.height(config: self, maxWidth: size.width)
 	}
-	
 }
 
 // MARK: - Private
 
 private extension ReviewCellConfig {
-	
+
 	/// Текст кнопки "Показать полностью...".
 	static let showMoreText = "Показать полностью..."
 		.attributed(font: .showMore, color: .showMore)
-	
+
 }
 
 // MARK: - Cell
 
 final class ReviewCell: UITableViewCell {
 	fileprivate var config: Config?
-	
+
 	fileprivate let avatarImageView = UIImageView()
 	fileprivate let ratingImageView = UIImageView()
 	fileprivate let usernameLabel = UILabel()
@@ -85,16 +84,16 @@ final class ReviewCell: UITableViewCell {
 	fileprivate let createdLabel = UILabel()
 	fileprivate let showMoreButton = UIButton()
 	fileprivate let photosStackView = UIStackView()
-	
+
 	required init?(coder: NSCoder) {
 		fatalError("init(coder:) has not been implemented")
 	}
-	
+
 	override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
 		super.init(style: style, reuseIdentifier: reuseIdentifier)
 		setupCell()
 	}
-	
+
 	override func layoutSubviews() {
 		super.layoutSubviews()
 		guard let layout = config?.layout else { return }
@@ -106,7 +105,7 @@ final class ReviewCell: UITableViewCell {
 		showMoreButton.frame = layout.showMoreButtonFrame
 		photosStackView.frame = layout.photosFrame
 	}
-	
+
 	override func prepareForReuse() {
 		super.prepareForReuse()
 		avatarImageView.image = nil
@@ -117,7 +116,7 @@ final class ReviewCell: UITableViewCell {
 		showMoreButton.isHidden = false
 		photosStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
 	}
-	
+
 	fileprivate func configure(with config: Config) {
 		self.config = config
 		reviewTextLabel.attributedText = config.reviewText
@@ -144,7 +143,7 @@ final class ReviewCell: UITableViewCell {
 // MARK: - Private
 
 private extension ReviewCell {
-	
+
 	func setupCell() {
 		setupAvatarImageView()
 		setupRatingImageView()
@@ -154,32 +153,32 @@ private extension ReviewCell {
 		setupShowMoreButton()
 		setupPhotosStackView()
 	}
-	
+
 	func setupAvatarImageView() {
 		avatarImageView.contentMode = .scaleAspectFill
 		avatarImageView.clipsToBounds = true
 		contentView.addSubview(avatarImageView)
 	}
-	
+
 	func setupRatingImageView() {
 		ratingImageView.contentMode = .scaleAspectFit
 		contentView.addSubview(ratingImageView)
 	}
-	
+
 	func setupReviewTextLabel() {
 		reviewTextLabel.lineBreakMode = .byWordWrapping
 		reviewTextLabel.numberOfLines = 0
 		contentView.addSubview(reviewTextLabel)
 	}
-	
+
 	func setupUsernameLabel() {
 		contentView.addSubview(usernameLabel)
 	}
-	
+
 	func setupCreatedLabel() {
 		contentView.addSubview(createdLabel)
 	}
-	
+
 	func setupShowMoreButton() {
 		showMoreButton.contentVerticalAlignment = .fill
 		showMoreButton.setAttributedTitle(ReviewCellConfig.showMoreText, for: .normal)
@@ -189,14 +188,13 @@ private extension ReviewCell {
 		}, for: .touchUpInside)
 		contentView.addSubview(showMoreButton)
 	}
-	
+
 	func setupPhotosStackView() {
 		photosStackView.axis = .horizontal
 		photosStackView.distribution = .fillEqually
 		photosStackView.alignment = .center
 		contentView.addSubview(photosStackView)
 	}
-
 }
 
 // MARK: - Layout
@@ -221,12 +219,11 @@ private final class ReviewCellLayout {
 	private(set) var createdLabelFrame = CGRect.zero
 	private(set) var photosFrame = CGRect.zero
 	private(set) var usernameFrame = CGRect.zero
-	//private var showShowMoreButton: Bool = false
-	
+
 	// MARK: - Отступы
 
 	private let insets = UIEdgeInsets(top: 9.0, left: 12.0, bottom: 9.0, right: 12.0)
-	
+
 	private let avatarToUsernameSpacing = 10.0
 	private let usernameToRatingSpacing = 6.0
 	private let ratingToTextSpacing = 6.0
@@ -238,9 +235,9 @@ private final class ReviewCellLayout {
 	private let avatarToRatingSpacing = 10.0
 	private let ratingToUsernameSpacing = 4.0
 	private let usernameToTextSpacing = 6.0
-	
+
 	// MARK: - Расчёт фреймов и высоты ячейки
-	
+
 	/// Возвращает высоту ячейку с данной конфигурацией `config` и ограничением по ширине `maxWidth`.
 	func height(config: Config, maxWidth: CGFloat) -> CGFloat {
 		let width = maxWidth - insets.left - insets.right
@@ -320,7 +317,6 @@ private final class ReviewCellLayout {
 		return createdLabelFrame.maxY + insets.bottom
 	}
 }
-
 
 // MARK: - Typealias
 

@@ -3,7 +3,7 @@ import UIKit
 final class ReviewsView: UIView {
 
 	let tableView = UITableView()
-	private let activityIndicator = UIActivityIndicatorView(style: .large)
+	private let activityIndicator = CustomActivityIndicatorView()
 	
 	required init?(coder: NSCoder) {
 		fatalError("init(coder:) has not been implemented")
@@ -19,20 +19,30 @@ final class ReviewsView: UIView {
 		tableView.frame = bounds.inset(by: safeAreaInsets)
 		activityIndicator.center = center
 	}
-
 }
 
-// MARK: - Private
+// MARK: - extension ReviewsView
+extension ReviewsView {
+	func startLoading() {
+		activityIndicator.startAnimating()
+		tableView.isHidden = true
+	}
 
-/*private */extension ReviewsView {
-	
+	func stopLoading() {
+		activityIndicator.stopAnimating()
+		tableView.isHidden = false
+	}
+}
+// MARK: - Private
+private extension ReviewsView {
+
 	func setupView() {
 		backgroundColor = .systemBackground
 		setupTableView()
 		setupActivityIndicator()
 		
 	}
-	
+
 	func setupTableView() {
 		addSubview(tableView)
 		tableView.separatorStyle = .none
@@ -40,20 +50,8 @@ final class ReviewsView: UIView {
 		tableView.register(ReviewCell.self, forCellReuseIdentifier: ReviewCellConfig.reuseId)
 		tableView.register(ReviewCountCell.self, forCellReuseIdentifier: ReviewCountCellConfig.reuseId)
 	}
+
 	func setupActivityIndicator() {
 		addSubview(activityIndicator)
-		activityIndicator.hidesWhenStopped = true
 	}
-	
-	func startLoading() {
-		activityIndicator.startAnimating()
-		tableView.isHidden = true
-	}
-
-
-	func stopLoading() {
-		activityIndicator.stopAnimating()
-		tableView.isHidden = false
-	}
-	
 }

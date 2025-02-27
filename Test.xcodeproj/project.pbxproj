@@ -29,6 +29,7 @@
 		21ED1F652D69D0340012D6F6 /* ReviewsScreenFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21ED1F642D69D0340012D6F6 /* ReviewsScreenFactory.swift */; };
 		7212EB0D2D6E24400064A31D /* ReviewCountCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7212EB0C2D6E24400064A31D /* ReviewCountCell.swift */; };
 		72A7F52F2D6F1098009AC4FC /* NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72A7F52E2D6F1098009AC4FC /* NetworkManager.swift */; };
+		72A7F5722D70926E009AC4FC /* CustomActivityIndicator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72A7F5712D70926E009AC4FC /* CustomActivityIndicator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -55,6 +56,7 @@
 		21ED1F642D69D0340012D6F6 /* ReviewsScreenFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewsScreenFactory.swift; sourceTree = "<group>"; };
 		7212EB0C2D6E24400064A31D /* ReviewCountCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewCountCell.swift; sourceTree = "<group>"; };
 		72A7F52E2D6F1098009AC4FC /* NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NetworkManager.swift; sourceTree = "<group>"; };
+		72A7F5712D70926E009AC4FC /* CustomActivityIndicator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomActivityIndicator.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -155,6 +157,7 @@
 		21B82E372D47B1090085DAA2 /* Reviews */ = {
 			isa = PBXGroup;
 			children = (
+				72A7F5702D709257009AC4FC /* Subviews */,
 				21ED1F642D69D0340012D6F6 /* ReviewsScreenFactory.swift */,
 				21B82E292D47B0640085DAA2 /* ReviewsViewController.swift */,
 				2166A0F32D4A5B25009AAA76 /* ReviewsView.swift */,
@@ -199,6 +202,14 @@
 				72A7F52E2D6F1098009AC4FC /* NetworkManager.swift */,
 			);
 			path = Supported;
+			sourceTree = "<group>";
+		};
+		72A7F5702D709257009AC4FC /* Subviews */ = {
+			isa = PBXGroup;
+			children = (
+				72A7F5712D70926E009AC4FC /* CustomActivityIndicator.swift */,
+			);
+			path = Subviews;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -294,6 +305,7 @@
 				21B82E312D47B0640085DAA2 /* AppDelegate.swift in Sources */,
 				7212EB0D2D6E24400064A31D /* ReviewCountCell.swift in Sources */,
 				21B8416F2D47C4C60085DAA2 /* String+Ext.swift in Sources */,
+				72A7F5722D70926E009AC4FC /* CustomActivityIndicator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

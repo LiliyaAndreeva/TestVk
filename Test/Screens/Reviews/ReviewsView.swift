@@ -3,7 +3,7 @@ import UIKit
 final class ReviewsView: UIView {
 
 	let tableView = UITableView()
-	private let activityIndicator = UIActivityIndicatorView(style: .large)
+	private let activityIndicator = CustomActivityIndicatorView()
 	
 	required init?(coder: NSCoder) {
 		fatalError("init(coder:) has not been implemented")
@@ -21,8 +21,19 @@ final class ReviewsView: UIView {
 	}
 }
 
-// MARK: - Private
+// MARK: - extension ReviewsView
+extension ReviewsView {
+	func startLoading() {
+		activityIndicator.startAnimating()
+		tableView.isHidden = true
+	}
 
+	func stopLoading() {
+		activityIndicator.stopAnimating()
+		tableView.isHidden = false
+	}
+}
+// MARK: - Private
 private extension ReviewsView {
 
 	func setupView() {
@@ -42,17 +53,5 @@ private extension ReviewsView {
 
 	func setupActivityIndicator() {
 		addSubview(activityIndicator)
-		activityIndicator.hidesWhenStopped = true
 	}
-	
-	func startLoading() {
-		activityIndicator.startAnimating()
-		tableView.isHidden = true
-	}
-
-	func stopLoading() {
-		activityIndicator.stopAnimating()
-		tableView.isHidden = false
-	}
-	
 }

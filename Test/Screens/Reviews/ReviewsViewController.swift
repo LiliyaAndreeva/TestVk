@@ -62,7 +62,7 @@ private extension ReviewsViewController {
 	}
 	@objc func handleRefresh() {
 		viewModel.refreshReviews()
-		reviewsView.tableView.reloadData()  // Обновляем таблицу после загрузки
+		reviewsView.tableView.reloadData()
 		reviewsView.tableView.refreshControl?.endRefreshing()
 	}
 }

@@ -2,16 +2,16 @@ import UIKit
 
 /// Класс, описывающий бизнес-логику экрана отзывов.
 final class ReviewsViewModel: NSObject {
-	
+
 	/// Замыкание, вызываемое при изменении `state`.
 	var onStateChange: ((State) -> Void)?
-	
+
 	private var state: State
 	private let reviewsProvider: ReviewsProvider
 	private let ratingRenderer: RatingRenderer
 	private let decoder: JSONDecoder
 	private let networkManager: INetworkManager
-	
+
 	init(
 		state: State = State(),
 		reviewsProvider: ReviewsProvider = ReviewsProvider(),
@@ -35,29 +35,30 @@ extension ReviewsViewModel {
 	func refreshReviews() {
 		state.shouldLoad = true
 		state.isLoading = false
-		//state.offset = 0
 		state.items.removeAll()
+//		totalReviewsCount = 0
+//		state.offset = 0
 		getReviews()
 	}
 	
 	/// Метод получения отзывов.
-		func getReviews() {
-			guard state.shouldLoad, !state.isLoading else { return }
-			state.shouldLoad = false
-			state.isLoading.toggle()
-	
-			DispatchQueue.main.async {
-				self.onStateChange?(self.state)
-			}
-			DispatchQueue.global().async { [weak self] in
-				guard let self = self else { return }
-				self.reviewsProvider.getReviews(offset: self.state.offset) { result in
-					DispatchQueue.main.async {
-						self.gotReviews(result)
-					}
+	func getReviews() {
+		guard state.shouldLoad, !state.isLoading else { return }
+		state.shouldLoad = false
+		state.isLoading.toggle()
+		
+		DispatchQueue.main.async {
+			self.onStateChange?(self.state)
+		}
+		DispatchQueue.global().async { [weak self] in
+			guard let self = self else { return }
+			self.reviewsProvider.getReviews(offset: self.state.offset) { result in
+				DispatchQueue.main.async {
+					self.gotReviews(result)
 				}
 			}
 		}
+	}
 }
 
 // MARK: - Private
@@ -65,44 +66,44 @@ extension ReviewsViewModel {
 private extension ReviewsViewModel {
 	
 	/// Метод обработки получения отзывов.
-		func gotReviews(_ result: ReviewsProvider.GetReviewsResult) {
-			do {
-				let data = try result.get()
-				let reviews = try decoder.decode(Reviews.self, from: data)
-	
-				state.items.removeAll { $0 is ReviewCountCellConfig }
-				if state.isInitialLoad {
-					state.items.removeAll { $0 is ReviewCountCellConfig }
-				}
-				processReviews(reviews.items, currentIndex: 0, totalCount: reviews.count)
-			} catch {
-				state.shouldLoad = true
-				state.isLoading = false
-				onStateChange?(state)
-			}
+	func gotReviews(_ result: ReviewsProvider.GetReviewsResult) {
+		do {
+			let data = try result.get()
+			let reviews = try decoder.decode(Reviews.self, from: data)
+			state.items.removeAll { $0 is ReviewCountCellConfig }
+//			if state.isInitialLoad {
+//				state.items.removeAll { $0 is ReviewCountCellConfig }
+//			}
+			processReviews(reviews.items, currentIndex: 0, totalCount: reviews.count)
+		} catch {
+			state.shouldLoad = true
+			state.isLoading = false
+			onStateChange?(state)
 		}
-		func processReviews(_ reviews: [Review], currentIndex: Int, totalCount: Int) {
-			guard currentIndex < reviews.count else {
+	}
 	
-				state.shouldLoad = state.items.count < totalCount
-				state.isLoading = false
-				state.areImagesLoaded = true
-				if state.isInitialLoad {
-					state.isInitialLoad = false
-				}
-				let countConfig = ReviewCountCellConfig(reviewCount: state.items.count)
-				state.items.append(countConfig)
-				onStateChange?(state)
-				return
+	func processReviews(_ reviews: [Review], currentIndex: Int, totalCount: Int) {
+		guard currentIndex < reviews.count, state.items.count < totalCount else {
+			state.shouldLoad = state.items.count < totalCount
+			state.isLoading = false
+			state.areImagesLoaded = true
+			if state.isInitialLoad {
+				state.isInitialLoad = false
 			}
-	
-			let review = reviews[currentIndex]
-	
-			makeReviewItem(review) { item in
-				self.state.items.append(item)
-				self.processReviews(reviews, currentIndex: currentIndex + 1, totalCount: totalCount)
-			}
+			let countConfig = ReviewCountCellConfig(reviewCount: state.items.count)
+			state.items.append(countConfig)
+			
+			onStateChange?(state)
+			return
 		}
+		
+		let review = reviews[currentIndex]
+		
+		makeReviewItem(review) { item in
+			self.state.items.append(item)
+			self.processReviews(reviews, currentIndex: currentIndex + 1, totalCount: totalCount)
+		}
+	}
 
 	/// Метод, вызываемый при нажатии на кнопку "Показать полностью...".
 	/// Снимает ограничение на количество строк текста отзыва (раскрывает текст).

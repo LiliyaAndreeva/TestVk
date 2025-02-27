@@ -4,7 +4,8 @@ import Foundation
 final class ReviewsProvider {
 
     private let bundle: Bundle
-
+	private var initialReviews: Reviews?
+	
     init(bundle: Bundle = .main) {
         self.bundle = bundle
     }
@@ -39,4 +40,5 @@ extension ReviewsProvider {
             completion(.failure(.badData(error)))
         }
     }
+
 }

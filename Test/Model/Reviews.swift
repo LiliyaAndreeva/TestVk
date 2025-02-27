@@ -1,5 +1,7 @@
 /// Модель отзывов.
-struct Reviews: Decodable {
+import UIKit
+
+struct Reviews: Codable {
 
     /// Модели отзывов.
     let items: [Review]

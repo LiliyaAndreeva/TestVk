@@ -28,13 +28,18 @@ struct ReviewCellConfig {
 	/// Объект, хранящий посчитанные фреймы для ячейки отзыва.
 	fileprivate let layout = ReviewCellLayout()
 	
-	init(review: Review, onTapShowMore: @escaping (UUID) -> Void) {
+	init(
+		review: Review,
+		onTapShowMore: @escaping (UUID) -> Void,
+		avatarImage: UIImage,
+		photos: [UIImage]?
+	) {
 		self.reviewText = review.text.attributed(font: .text)
 		self.created = review.created.attributed(font: .created, color: .created)
 		self.username = (review.firstName + " " + review.lastName).attributed(font: .username)
 		self.rating = review.rating
-		self.avatarImage = UIImage(named: review.avatarImageName) ?? UIImage(named: "defaultAvatar")!
-		self.photos = review.photoImageNames?.compactMap { UIImage(named: $0) }
+		self.avatarImage = avatarImage
+		self.photos = photos
 		self.onTapShowMore = onTapShowMore
 	}
 }
@@ -47,27 +52,7 @@ extension ReviewCellConfig: TableCellConfig {
 	/// Вызывается из `cellForRowAt:` у `dataSource` таблицы.
 	func update(cell: UITableViewCell) {
 		guard let cell = cell as? ReviewCell else { return }
-		cell.reviewTextLabel.attributedText = reviewText
-		cell.reviewTextLabel.numberOfLines = maxLines
-		cell.usernameLabel.attributedText = username
-		cell.createdLabel.attributedText = created
-		cell.avatarImageView.image = avatarImage
-		cell.avatarImageView.layer.cornerRadius = layout.avatarCornerRadius
-		cell.ratingImageView.image = RatingRenderer(config: .default()).ratingImage(rating)
-		cell.photosStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
-		if let photos = photos {
-			photos.forEach { photo in
-				let imageView = UIImageView(image: photo)
-				imageView.contentMode = .scaleAspectFill
-				imageView.clipsToBounds = true
-				imageView.layer.cornerRadius = layout.photoCornerRadius
-				//imageView.translatesAutoresizingMaskIntoConstraints = false
-				//imageView.widthAnchor.constraint(equalToConstant: layout.photoSize.width).isActive = true
-				//imageView.heightAnchor.constraint(equalToConstant: layout.photoSize.height).isActive = true
-				cell.photosStackView.addArrangedSubview(imageView)
-			}
-		}
-		cell.config = self
+		cell.configure(with: self)
 	}
 	
 	/// Метод, возвращаюший высоту ячейки с данным ограничением по размеру.
@@ -132,6 +117,28 @@ final class ReviewCell: UITableViewCell {
 		showMoreButton.isHidden = false
 		photosStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
 	}
+	
+	fileprivate func configure(with config: Config) {
+		self.config = config
+		reviewTextLabel.attributedText = config.reviewText
+		reviewTextLabel.numberOfLines = config.maxLines
+		usernameLabel.attributedText = config.username
+		createdLabel.attributedText = config.created
+		avatarImageView.image = config.avatarImage
+		ratingImageView.image = RatingRenderer(config: .default()).ratingImage(config.rating)
+		avatarImageView.layer.cornerRadius = config.layout.avatarCornerRadius
+		photosStackView.arrangedSubviews.forEach { $0.removeFromSuperview() }
+		photosStackView.spacing = config.layout.photosSpacing
+		if let photos = config.photos {
+			photos.forEach { photo in
+				let imageView = UIImageView(image: photo)
+				imageView.contentMode = .scaleAspectFill
+				imageView.clipsToBounds = true
+				imageView.layer.cornerRadius = config.layout.photoCornerRadius
+				photosStackView.addArrangedSubview(imageView)
+			}
+		}
+	}
 }
 
 // MARK: - Private
@@ -166,7 +173,6 @@ private extension ReviewCell {
 	}
 	
 	func setupUsernameLabel() {
-		//usernameLabel.font = UIFont.systemFont(.username)
 		contentView.addSubview(usernameLabel)
 	}
 	
@@ -186,7 +192,6 @@ private extension ReviewCell {
 	
 	func setupPhotosStackView() {
 		photosStackView.axis = .horizontal
-		photosStackView.spacing = config?.layout.photosSpacing ?? 0
 		photosStackView.distribution = .fillEqually
 		photosStackView.alignment = .center
 		contentView.addSubview(photosStackView)
@@ -216,6 +221,7 @@ private final class ReviewCellLayout {
 	private(set) var createdLabelFrame = CGRect.zero
 	private(set) var photosFrame = CGRect.zero
 	private(set) var usernameFrame = CGRect.zero
+	//private var showShowMoreButton: Bool = false
 	
 	// MARK: - Отступы
 
@@ -226,7 +232,6 @@ private final class ReviewCellLayout {
 	private let ratingToTextSpacing = 6.0
 	private let ratingToPhotosSpacing = 10.0
 
-	// private let photosSpacing = 8.0
 	private let photosToTextSpacing = 10.0
 	private let reviewTextToCreatedSpacing = 6.0
 	private let showMoreToCreatedSpacing = 6.0
@@ -247,7 +252,6 @@ private final class ReviewCellLayout {
 			origin: CGPoint(x: insets.left, y: maxY),
 			size: avatarSize
 		)
-
 		let usernameSize = config.username.boundingRect(
 			width: width - (
 				insets.left + avatarFrame.maxX + avatarToRatingSpacing
@@ -261,7 +265,6 @@ private final class ReviewCellLayout {
 			),
 			size: usernameSize
 		)
-
 		let ratingRenderer = RatingRenderer(config: .default())
 		let ratingImage = ratingRenderer.ratingImage(config.rating)
 		ratingFrame = CGRect(
@@ -270,15 +273,24 @@ private final class ReviewCellLayout {
 		)
 
 		maxY = max(avatarFrame.maxY, usernameFrame.maxY, ratingFrame.maxY) + usernameToTextSpacing
-		
+		if let photos = config.photos, !photos.isEmpty {
+			let photosWidth = CGFloat(photos.count) * photoSize.width + CGFloat(photos.count - 1) * photosSpacing
+			photosFrame = CGRect(
+				origin: CGPoint(x: avatarFrame.maxX  + avatarToRatingSpacing, y: maxY),
+				size: CGSize(
+					width: min(photosWidth, width - (avatarFrame.maxX + avatarToRatingSpacing + insets.right)),
+					height: photoSize.height
+				)
+			)
+			maxY = photosFrame.maxY + photosToTextSpacing
+		} else {
+			photosFrame = .zero
+		}
+
 		if !config.reviewText.isEmpty() {
-
 			let currentTextHeight = (config.reviewText.font()?.lineHeight ?? .zero) * CGFloat(config.maxLines)
-
 			let actualTextHeight = config.reviewText.boundingRect(width: width).size.height
-
 			showShowMoreButton = config.maxLines != .zero && actualTextHeight > currentTextHeight
-			
 			reviewTextLabelFrame = CGRect(
 				origin: CGPoint(x: avatarFrame.maxX  + avatarToRatingSpacing, y: maxY),
 				size: config.reviewText.boundingRect(
@@ -289,17 +301,6 @@ private final class ReviewCellLayout {
 				).size
 			)
 			maxY = reviewTextLabelFrame.maxY + reviewTextToCreatedSpacing
-		}
-
-		if let photos = config.photos, !photos.isEmpty {
-			let photosWidth = CGFloat(photos.count) * photoSize.width + CGFloat(photos.count - 1) * photosSpacing
-			photosFrame = CGRect(
-				origin: CGPoint(x: avatarFrame.maxX  + avatarToRatingSpacing, y: maxY),
-				size: CGSize(width: min(photosWidth, width - (avatarFrame.maxX + avatarToRatingSpacing + insets.right)), height: photoSize.height)
-			)
-			maxY = photosFrame.maxY + photosToTextSpacing
-		} else {
-			photosFrame = .zero
 		}
 
 		if showShowMoreButton {
@@ -316,7 +317,6 @@ private final class ReviewCellLayout {
 			origin: CGPoint(x: avatarFrame.maxX  + avatarToRatingSpacing, y: maxY),
 			size: config.created.boundingRect(width: width).size
 		)
-
 		return createdLabelFrame.maxY + insets.bottom
 	}
 }

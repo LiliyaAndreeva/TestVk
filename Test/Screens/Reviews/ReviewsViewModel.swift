@@ -11,7 +11,7 @@ final class ReviewsViewModel: NSObject {
 	private let ratingRenderer: RatingRenderer
 	private let decoder: JSONDecoder
 	private let networkManager: INetworkManager
-
+	
 	init(
 		state: State = State(),
 		reviewsProvider: ReviewsProvider = ReviewsProvider(),
@@ -25,22 +25,22 @@ final class ReviewsViewModel: NSObject {
 		self.decoder = decoder
 		self.networkManager = networkManager
 	}
-
 }
 
 // MARK: - Internal
 
 extension ReviewsViewModel {
-
 	typealias State = ReviewsViewModelState
-
+	
 	/// Метод получения отзывов.
 	func getReviews() {
 		guard state.shouldLoad, !state.isLoading else { return }
 		state.shouldLoad = false
-		state.isLoading = true
-		onStateChange?(state)
-	
+		state.isLoading.toggle()
+		
+		DispatchQueue.main.async {
+			self.onStateChange?(self.state)
+		}
 		DispatchQueue.global().async { [weak self] in
 			guard let self = self else { return }
 			self.reviewsProvider.getReviews(offset: self.state.offset) { result in
@@ -50,53 +50,51 @@ extension ReviewsViewModel {
 			}
 		}
 	}
-
+	
 }
 
 // MARK: - Private
 
 private extension ReviewsViewModel {
-	
+
 	/// Метод обработки получения отзывов.
 	func gotReviews(_ result: ReviewsProvider.GetReviewsResult) {
 		do {
 			let data = try result.get()
 			let reviews = try decoder.decode(Reviews.self, from: data)
-			print("Декодировано \(reviews.items.count) отзывов, общее количество: \(reviews.count)")
-			
-			state.items.removeAll { $0 is ReviewCountCellConfig }
 
-			
-			let group = DispatchGroup()
-			var reviewItems: [ReviewItem] = []
-			
-			for review in reviews.items {
-				group.enter()
-				makeReviewItem(review) { item in
-					reviewItems.append(item)
-					group.leave()
-				}
+			state.items.removeAll { $0 is ReviewCountCellConfig }
+			if state.isInitialLoad {
+				state.items.removeAll { $0 is ReviewCountCellConfig }
 			}
-			
-			group.notify(queue: .main) {
-				print("group.notify сработал, добавляем \(reviewItems.count) элементов")
-				self.state.items += reviewItems
-				self.state.offset += self.state.limit
-				self.state.shouldLoad = self.state.offset < reviews.count
-				self.state.isLoading = false
-				self.state.areImagesLoaded = true
-				if self.state.isInitialLoad {
-					self.state.isInitialLoad = false
-				}
-				let countConfig = ReviewCountCellConfig(reviewCount: self.state.items.count)
-				self.state.items.append(countConfig)
-				self.onStateChange?(self.state)
-				print("onStateChange вызван")
-			}
+			processReviews(reviews.items, currentIndex: 0, totalCount: reviews.count)
 		} catch {
 			state.shouldLoad = true
 			state.isLoading = false
 			onStateChange?(state)
+		}
+	}
+
+	func processReviews(_ reviews: [Review], currentIndex: Int, totalCount: Int) {
+		guard currentIndex < reviews.count else {
+
+			state.shouldLoad = state.items.count < totalCount
+			state.isLoading = false
+			state.areImagesLoaded = true
+			if state.isInitialLoad {
+				state.isInitialLoad = false
+			}
+			let countConfig = ReviewCountCellConfig(reviewCount: state.items.count)
+			state.items.append(countConfig)
+			onStateChange?(state)
+			return
+		}
+
+		let review = reviews[currentIndex]
+		
+		makeReviewItem(review) { item in
+			self.state.items.append(item)
+			self.processReviews(reviews, currentIndex: currentIndex + 1, totalCount: totalCount)
 		}
 	}
 
@@ -112,52 +110,60 @@ private extension ReviewsViewModel {
 		onStateChange?(state)
 	}
 
+
 	func loadImages(avatarURL: URL?, photoURLs: [URL]?, completion: @escaping (UIImage, [UIImage]?) -> Void) {
 		let placeholderAvatar = UIImage(named: "l5w5aIHioYc") ?? UIImage()
-		
+		let defaultPhoto1 = UIImage(named: "IMG_0001") ?? UIImage()
+
 		var avatarImage = placeholderAvatar
 		var loadedPhotos: [UIImage] = []
-		
-		let group = DispatchGroup()
-		
+
+		var pendingTasks = 0
+
+		if avatarURL != nil { pendingTasks += 1 }
+		if let photoURLs = photoURLs, !photoURLs.isEmpty { pendingTasks += photoURLs.count }
+
+		if pendingTasks == 0 {
+			completion(avatarImage, nil)
+			return
+		}
+
 		if let avatarURL = avatarURL {
-			group.enter()
 			networkManager.fetchImage(from: avatarURL) { result in
 				switch result {
 				case .success(let image):
 					avatarImage = image
-					print("Загружен аватар: \(avatarURL)")
-				case .failure(let error):
+				case .failure(_):
 					avatarImage = placeholderAvatar
-					print("Ошибка загрузки аватара: \(avatarURL), ошибка: \(error)")
 				}
-				group.leave()
+				pendingTasks -= 1
+				if pendingTasks == 0 {
+					DispatchQueue.main.async {
+						completion(avatarImage, loadedPhotos.isEmpty ? nil : loadedPhotos)
+					}
+				}
 			}
 		}
-		
+
 		if let photoURLs = photoURLs, !photoURLs.isEmpty {
 			for url in photoURLs {
-				group.enter()
 				networkManager.fetchImage(from: url) { result in
 					switch result {
 					case .success(let image):
 						loadedPhotos.append(image)
-						print("Загружено фото: \(url)")
-					case .failure(let error):
-						print("Ошибка загрузки фото: \(url), ошибка: \(error)")
+					case .failure(_):
+						loadedPhotos.append(defaultPhoto1)
 					}
-					group.leave()
+					pendingTasks -= 1
+					if pendingTasks == 0 {
+						DispatchQueue.main.async {
+							completion(avatarImage, loadedPhotos.isEmpty ? nil : loadedPhotos)
+						}
+					}
 				}
 			}
 		}
-		
-		group.notify(queue: .main) {
-			print("Все изображения загружены, photos: \(loadedPhotos.count)")
-			self.onStateChange?(self.state)
-			completion(avatarImage, loadedPhotos.isEmpty ? nil : loadedPhotos)
-		}
 	}
-
 }
 
 // MARK: - Items
@@ -165,11 +171,8 @@ private extension ReviewsViewModel {
 private extension ReviewsViewModel {
 
 	typealias ReviewItem = ReviewCellConfig
-	
-
 	func makeReviewItem(_ review: Review, completion: @escaping (ReviewItem) -> Void) {
 		loadImages(avatarURL: review.avatarURL, photoURLs: review.photoURLs) { avatarImage, loadedPhotos in
-			
 			let reviewItem = ReviewItem(
 				review: review,
 				onTapShowMore: self.showMoreReview,
@@ -184,18 +187,17 @@ private extension ReviewsViewModel {
 // MARK: - UITableViewDataSource
 
 extension ReviewsViewModel: UITableViewDataSource {
-
+	
 	func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
 		state.items.count
 	}
-
+	
 	func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
 		let config = state.items[indexPath.row]
 		let cell = tableView.dequeueReusableCell(withIdentifier: config.reuseId, for: indexPath)
 		config.update(cell: cell)
 		return cell
 	}
-
 }
 
 // MARK: - UITableViewDelegate
@@ -228,5 +230,4 @@ extension ReviewsViewModel: UITableViewDelegate {
 		let remainingDistance = contentHeight - viewHeight - targetOffsetY
 		return remainingDistance <= triggerDistance
 	}
-
 }

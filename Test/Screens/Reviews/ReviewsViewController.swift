@@ -44,7 +44,7 @@ private extension ReviewsViewController {
 		viewModel.onStateChange = { [weak self] state in
 			DispatchQueue.main.async {
 				guard let self = self else { return }
-				if state.isLoading && state.isInitialLoad {
+				if state.isLoading &&  state.isInitialLoad {
 					self.reviewsView.startLoading()
 				} else if !state.isLoading {
 					self.reviewsView.stopLoading()

@@ -39,5 +39,4 @@ extension ReviewsProvider {
             completion(.failure(.badData(error)))
         }
     }
-
 }

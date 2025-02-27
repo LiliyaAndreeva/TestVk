@@ -36,21 +36,33 @@ private extension ReviewsViewController {
 		let reviewsView = ReviewsView()
 		reviewsView.tableView.delegate = viewModel
 		reviewsView.tableView.dataSource = viewModel
+		
+		let refreshControl = UIRefreshControl()
+				refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
+				reviewsView.tableView.refreshControl = refreshControl
+		
 		return reviewsView
 	}
 
 	func setupViewModel() {
-
 		viewModel.onStateChange = { [weak self] state in
 			DispatchQueue.main.async {
 				guard let self = self else { return }
-				if state.isLoading &&  state.isInitialLoad {
+				if state.isLoading && state.isInitialLoad {
 					self.reviewsView.startLoading()
 				} else if !state.isLoading {
 					self.reviewsView.stopLoading()
 					self.reviewsView.tableView.reloadData()
+					if let refreshControl = self.reviewsView.tableView.refreshControl, state.isInitialLoad == false {
+						refreshControl.endRefreshing()
+					}
 				}
 			}
 		}
+	}
+	@objc func handleRefresh() {
+		viewModel.refreshReviews()
+		reviewsView.tableView.reloadData()  // Обновляем таблицу после загрузки
+		reviewsView.tableView.refreshControl?.endRefreshing()
 	}
 }

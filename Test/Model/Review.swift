@@ -1,6 +1,6 @@
 /// Модель отзыва.
 import Foundation
-struct Review: Decodable {
+struct Review: Codable {
 	
 	/// Текст отзыва.
 	let text: String

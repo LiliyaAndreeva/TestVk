@@ -19,20 +19,19 @@ final class ReviewsView: UIView {
 		tableView.frame = bounds.inset(by: safeAreaInsets)
 		activityIndicator.center = center
 	}
-
 }
 
 // MARK: - Private
 
-/*private */extension ReviewsView {
-	
+private extension ReviewsView {
+
 	func setupView() {
 		backgroundColor = .systemBackground
 		setupTableView()
 		setupActivityIndicator()
 		
 	}
-	
+
 	func setupTableView() {
 		addSubview(tableView)
 		tableView.separatorStyle = .none
@@ -40,6 +39,7 @@ final class ReviewsView: UIView {
 		tableView.register(ReviewCell.self, forCellReuseIdentifier: ReviewCellConfig.reuseId)
 		tableView.register(ReviewCountCell.self, forCellReuseIdentifier: ReviewCountCellConfig.reuseId)
 	}
+
 	func setupActivityIndicator() {
 		addSubview(activityIndicator)
 		activityIndicator.hidesWhenStopped = true
@@ -49,7 +49,6 @@ final class ReviewsView: UIView {
 		activityIndicator.startAnimating()
 		tableView.isHidden = true
 	}
-
 
 	func stopLoading() {
 		activityIndicator.stopAnimating()

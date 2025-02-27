@@ -1,10 +1,9 @@
 import UIKit
-
+// MARK: - class ReviewsViewController
 final class ReviewsViewController: UIViewController {
 
 	private lazy var reviewsView = makeReviewsView()
 	private let viewModel: ReviewsViewModel
-
 
 	init(viewModel: ReviewsViewModel) {
 		self.viewModel = viewModel
@@ -36,7 +35,7 @@ private extension ReviewsViewController {
 		let reviewsView = ReviewsView()
 		reviewsView.tableView.delegate = viewModel
 		reviewsView.tableView.dataSource = viewModel
-		
+
 		let refreshControl = UIRefreshControl()
 				refreshControl.addTarget(self, action: #selector(handleRefresh), for: .valueChanged)
 				reviewsView.tableView.refreshControl = refreshControl
@@ -60,6 +59,7 @@ private extension ReviewsViewController {
 			}
 		}
 	}
+
 	@objc func handleRefresh() {
 		viewModel.refreshReviews()
 		reviewsView.tableView.reloadData()

@@ -1,5 +1,5 @@
 //
-//  Ку.swift
+//  ReviewCountCellConfig.swift
 //  Test
 //
 //  Created by Лилия Андреева on 25.02.2025.
